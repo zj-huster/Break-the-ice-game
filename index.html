@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#fff8ec" />
+    <meta name="description" content="一个适合自我介绍和团队破冰的 12 话题互动转盘。" />
+    <title>认识一下 · 自我介绍转盘</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <section class="wheel-view" id="wheelView" aria-labelledby="mainTitle">
+        <header class="topbar">
+          <a class="brand" href="#" aria-label="返回转盘首页">
+            <span class="brand-mark" aria-hidden="true">✦</span>
+            <span>认识一下</span>
+          </a>
+          <button class="history-button" id="historyButton" type="button" aria-expanded="false" aria-controls="historyPanel">
+            <span>抽取记录</span>
+            <span class="history-count" id="historyCount">0</span>
+          </button>
+        </header>
+
+        <div class="wheel-layout">
+          <div class="intro-copy">
+            <p class="eyebrow"><span></span> ICEBREAKER · 破冰时刻</p>
+            <h1 id="mainTitle">转到哪里，<br /><em>就聊到哪里</em></h1>
+            <p class="intro-text">12 个轻松话题，给每一次自我介绍一点惊喜。准备好后，点击转盘中央开始。</p>
+
+            <div class="how-to" aria-label="使用步骤">
+              <div><b>01</b><span>点击转盘</span></div>
+              <i aria-hidden="true"></i>
+              <div><b>02</b><span>随机抽题</span></div>
+              <i aria-hidden="true"></i>
+              <div><b>03</b><span>分享自己</span></div>
+            </div>
+          </div>
+
+          <div class="wheel-stage">
+            <div class="doodle doodle-one" aria-hidden="true">✦</div>
+            <div class="doodle doodle-two" aria-hidden="true">⌁</div>
+            <div class="pointer" aria-hidden="true"><span></span></div>
+            <div class="wheel-wrap" id="wheelWrap">
+              <canvas id="wheelCanvas" width="720" height="720" aria-label="包含 12 个自我介绍话题的转盘"></canvas>
+              <div class="wheel-label-layer" id="wheelLabelLayer" aria-hidden="true"></div>
+              <button class="spin-button" id="spinButton" type="button" aria-label="开始转动话题转盘">
+                <span class="spin-spark" aria-hidden="true">✦</span>
+                <strong>开始</strong>
+                <small>SPIN</small>
+              </button>
+            </div>
+            <p class="spin-hint" id="spinHint">点击一次开始，再点击一次停止 · <kbd>Space</kbd></p>
+          </div>
+        </div>
+
+        <aside class="history-panel" id="historyPanel" aria-hidden="true">
+          <div class="history-head">
+            <div>
+              <p>THIS SESSION</p>
+              <h2>抽取记录</h2>
+            </div>
+            <button id="closeHistory" class="icon-button" type="button" aria-label="关闭抽取记录">×</button>
+          </div>
+          <ol id="historyList"></ol>
+          <p class="empty-history" id="emptyHistory">还没有抽取话题，<br />第一位分享者会转到什么呢？</p>
+          <button class="clear-button" id="clearHistory" type="button">清空记录</button>
+        </aside>
+        <div class="panel-scrim" id="panelScrim" aria-hidden="true"></div>
+      </section>
+
+      <section class="topic-view" id="topicView" aria-live="polite" aria-labelledby="topicTitle">
+        <header class="topic-topbar">
+          <button class="back-button" id="backButton" type="button"><span aria-hidden="true">←</span> 返回转盘</button>
+          <div class="brand compact"><span class="brand-mark" aria-hidden="true">✦</span><span>认识一下</span></div>
+          <span class="topic-progress" id="topicProgress">01 / 12</span>
+        </header>
+
+        <div class="topic-card" id="topicCard">
+          <div class="topic-number" id="topicNumber" aria-hidden="true">01</div>
+          <div class="topic-icon" id="topicIcon" aria-hidden="true">☀</div>
+          <p class="topic-kicker" id="topicKicker">LET'S TALK ABOUT</p>
+          <h2 id="topicTitle">话题标题</h2>
+          <p class="topic-lead" id="topicLead">话题介绍</p>
+          <div class="prompt-list" id="promptList"></div>
+
+          <div class="topic-actions">
+            <div class="timer" id="timer" aria-label="分享计时器">
+              <svg viewBox="0 0 52 52" aria-hidden="true">
+                <circle class="timer-track" cx="26" cy="26" r="22"></circle>
+                <circle class="timer-ring" id="timerRing" cx="26" cy="26" r="22"></circle>
+              </svg>
+              <span id="timerText">60</span>
+            </div>
+            <button class="timer-button" id="timerButton" type="button">开始 60 秒分享</button>
+            <button class="next-button" id="nextButton" type="button">下一位，继续转 <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+
+        <p class="topic-note">没有标准答案，分享你此刻最想说的就好。</p>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
