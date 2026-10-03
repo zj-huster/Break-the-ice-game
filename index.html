@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fff8ec" />
-    <meta name="description" content="一个适合自我介绍和团队破冰的 12 话题互动转盘。" />
-    <title>认识一下 · 自我介绍转盘</title>
+    <meta name="description" content="包含 11 位新同学出场顺序与 12 个破冰话题的互动转盘。" />
+    <title>认识一下 · 新同学自我介绍转盘</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -18,10 +18,13 @@
             <span class="brand-mark" aria-hidden="true">✦</span>
             <span>认识一下</span>
           </a>
-          <button class="history-button" id="historyButton" type="button" aria-expanded="false" aria-controls="historyPanel">
-            <span>抽取记录</span>
-            <span class="history-count" id="historyCount">0</span>
-          </button>
+          <div class="topbar-actions">
+            <button class="roster-button" id="rosterButton" type="button"><span aria-hidden="true">◎</span> 同学顺序</button>
+            <button class="history-button" id="historyButton" type="button" aria-expanded="false" aria-controls="historyPanel">
+              <span>抽取记录</span>
+              <span class="history-count" id="historyCount">0</span>
+            </button>
+          </div>
         </header>
 
         <div class="wheel-layout">
@@ -40,6 +43,11 @@
           </div>
 
           <div class="wheel-stage">
+            <div class="current-person-badge" aria-live="polite">
+              <span>NOW · 当前同学</span>
+              <strong class="currentPersonName">李周强</strong>
+              <small class="currentPersonPosition">01 / 11</small>
+            </div>
             <div class="doodle doodle-one" aria-hidden="true">✦</div>
             <div class="doodle doodle-two" aria-hidden="true">⌁</div>
             <div class="pointer" aria-hidden="true"><span></span></div>
@@ -71,12 +79,51 @@
         <div class="panel-scrim" id="panelScrim" aria-hidden="true"></div>
       </section>
 
+      <section class="roster-view" id="rosterView" aria-labelledby="rosterTitle">
+        <header class="topic-topbar roster-topbar">
+          <button class="back-button" id="rosterBackButton" type="button"><span aria-hidden="true">←</span> 返回话题转盘</button>
+          <div class="brand compact"><span class="brand-mark" aria-hidden="true">✦</span><span>认识一下</span></div>
+          <span class="topic-progress">NEW CLASSMATES · 11</span>
+        </header>
+
+        <div class="roster-layout">
+          <div class="roster-copy">
+            <p class="eyebrow"><span></span> MEET THE CREW · 新同学登场</p>
+            <h1 id="rosterTitle">下一位，<br /><em>会是谁？</em></h1>
+            <p>点击按钮，用一场小小的数字烟花打乱顺序。名单会在本次活动中保留，你也可以随时上一位或跳过。</p>
+            <button class="shuffle-button" id="shuffleButton" type="button">
+              <span class="shuffle-icon" aria-hidden="true">✦</span>
+              <span><strong>生成出场顺序</strong><small>SHUFFLE THE LINEUP</small></span>
+            </button>
+          </div>
+
+          <div class="roster-board" id="rosterBoard">
+            <div class="orbit orbit-one" aria-hidden="true"></div>
+            <div class="orbit orbit-two" aria-hidden="true"></div>
+            <div class="roster-current-card" id="rosterCurrentCard">
+              <span class="roster-current-label">NOW ON STAGE</span>
+              <div class="roster-avatar" id="rosterAvatar">李</div>
+              <h2 id="rosterCurrentName">李周强</h2>
+              <p id="rosterCurrentCount">第 1 位 · 共 11 位</p>
+              <div class="roster-controls">
+                <button id="previousPersonButton" type="button"><span aria-hidden="true">←</span> 上一位</button>
+                <button id="startPersonButton" class="primary" type="button">为 TA 转话题 <span aria-hidden="true">↗</span></button>
+                <button id="skipPersonButton" type="button">跳过 / 下一位 <span aria-hidden="true">→</span></button>
+              </div>
+            </div>
+            <ol class="roster-list" id="rosterList" aria-label="自我介绍顺序"></ol>
+          </div>
+        </div>
+      </section>
+
       <section class="topic-view" id="topicView" aria-live="polite" aria-labelledby="topicTitle">
         <header class="topic-topbar">
           <button class="back-button" id="backButton" type="button"><span aria-hidden="true">←</span> 返回转盘</button>
           <div class="brand compact"><span class="brand-mark" aria-hidden="true">✦</span><span>认识一下</span></div>
           <span class="topic-progress" id="topicProgress">01 / 12</span>
         </header>
+
+        <div class="topic-person-chip"><span>当前分享</span><strong class="currentPersonName">李周强</strong><small class="currentPersonPosition">01 / 11</small></div>
 
         <div class="topic-card" id="topicCard">
           <div class="topic-number" id="topicNumber" aria-hidden="true">01</div>
@@ -95,7 +142,8 @@
               <span id="timerText">60</span>
             </div>
             <button class="timer-button" id="timerButton" type="button">开始 60 秒分享</button>
-            <button class="next-button" id="nextButton" type="button">下一位，继续转 <span aria-hidden="true">→</span></button>
+            <button class="previous-topic-button" id="previousTopicButton" type="button"><span aria-hidden="true">←</span> 上一位</button>
+            <button class="next-button" id="nextButton" type="button">跳过 / 下一位 <span aria-hidden="true">→</span></button>
           </div>
         </div>
 

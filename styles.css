@@ -84,6 +84,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--sky); outline-o
 }
 
 .history-count { display: grid; place-items: center; min-width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: white; font: 700 12px var(--latin); }
+.topbar-actions { display: flex; align-items: center; gap: 9px; }
+.roster-button { min-height: 46px; padding: 0 17px; border: 0; border-radius: 999px; background: var(--green); color: white; cursor: pointer; font-size: 13px; font-weight: 700; box-shadow: 0 5px 0 rgba(32,49,45,.12); }
+.roster-button span { margin-right: 5px; color: var(--yellow); }
 .wheel-layout { min-height: calc(100vh - 116px); display: grid; grid-template-columns: minmax(280px, .78fr) minmax(0, 1.22fr); align-items: center; gap: 3vw; max-width: 1480px; margin: auto; }
 .intro-copy { position: relative; z-index: 2; padding: 28px 0; }
 .eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 20px; color: var(--green); font: 700 12px/1 var(--latin); letter-spacing: .18em; }
@@ -98,6 +101,13 @@ h1 em::after { content: ""; position: absolute; left: 2%; right: 0; bottom: -8px
 .how-to i { width: 24px; height: 1px; background: var(--line); }
 
 .wheel-stage { position: relative; display: grid; justify-items: center; padding: 38px 0 16px; }
+.current-person-badge { position: absolute; z-index: 7; left: 0; top: 14%; width: 132px; padding: 13px 15px; border: 1px solid rgba(32,49,45,.12); border-radius: 16px; background: rgba(255,253,247,.92); box-shadow: 0 12px 30px rgba(70,57,34,.12); transform: rotate(-3deg); }
+.current-person-badge::after { content: ""; position: absolute; right: -8px; top: 27px; width: 14px; height: 14px; border-top: 1px solid rgba(32,49,45,.12); border-right: 1px solid rgba(32,49,45,.12); background: #fffdf7; transform: rotate(45deg); }
+.current-person-badge span, .current-person-badge small { display: block; color: var(--muted); font: 700 8px var(--latin); letter-spacing: .12em; }
+.current-person-badge strong { display: block; margin: 5px 0 4px; font-size: 20px; }
+.current-person-badge.is-live { animation: personLive .75s ease-in-out infinite alternate; }
+.current-person-badge.is-live span { color: var(--coral); }
+@keyframes personLive { to { transform: rotate(2deg) scale(1.045); box-shadow: 0 15px 36px rgba(240,111,85,.2); } }
 .wheel-wrap {
   --wheel-counter: 0deg;
   position: relative;
@@ -177,6 +187,8 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
 
 .topic-view { display: none; min-height: 100vh; padding: 0 5vw 28px; opacity: 0; }
 .topic-view.active { display: block; animation: viewIn .55s forwards; }
+.roster-view { display: none; min-height: 100vh; padding: 0 5vw 34px; opacity: 0; overflow: hidden; }
+.roster-view.active { display: block; animation: viewIn .55s forwards; }
 .wheel-view.hidden { display: none; }
 @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .topic-topbar { max-width: 1320px; margin: auto; }
@@ -185,6 +197,10 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
 .back-button:hover span { transform: translateX(-4px); }
 .brand.compact { position: absolute; left: 50%; transform: translateX(-50%); }
 .topic-progress { color: var(--muted); font: 700 12px var(--latin); letter-spacing: .12em; }
+.topic-person-chip { width: max-content; margin: 22px auto -30px; padding: 8px 12px 8px 15px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.7); }
+.topic-person-chip span { margin-right: 9px; color: var(--coral); font-size: 11px; font-weight: 700; }
+.topic-person-chip strong { font-size: 14px; }
+.topic-person-chip small { margin-left: 9px; color: var(--muted); font: 700 10px var(--latin); }
 .topic-card { --topic: var(--coral); position: relative; max-width: 960px; min-height: 620px; margin: 54px auto 20px; padding: 58px 86px 44px; overflow: hidden; border: 1px solid rgba(32,49,45,.08); border-radius: 34px; background: rgba(255,255,255,.7); box-shadow: var(--shadow); text-align: center; }
 .topic-card::before { content: ""; position: absolute; width: 420px; height: 420px; left: -240px; top: -250px; border-radius: 50%; background: var(--topic); opacity: .16; }
 .topic-card::after { content: ""; position: absolute; width: 180px; height: 180px; right: -95px; bottom: -110px; border: 28px solid var(--topic); border-radius: 50%; opacity: .17; }
@@ -205,13 +221,56 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
 .timer-track { stroke: var(--line); }
 .timer-ring { stroke: var(--topic); stroke-linecap: round; stroke-dasharray: 138.23; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
 .timer span { position: absolute; inset: 0; display: grid; place-items: center; font: 700 13px var(--latin); }
-.timer-button, .next-button { min-height: 52px; padding: 0 24px; border-radius: 999px; cursor: pointer; font-weight: 700; }
-.timer-button { border: 1px solid var(--line); background: transparent; color: var(--ink); }
+.timer-button, .previous-topic-button, .next-button { min-height: 52px; padding: 0 22px; border-radius: 999px; cursor: pointer; font-weight: 700; }
+.timer-button, .previous-topic-button { border: 1px solid var(--line); background: transparent; color: var(--ink); }
+.previous-topic-button:disabled { opacity: .35; cursor: not-allowed; }
 .next-button { border: 0; background: var(--ink); color: white; }
 .next-button span { display: inline-block; margin-left: 7px; }
 .topic-note { margin: 20px 0 0; color: var(--muted); text-align: center; font-size: 12px; }
 .toast { position: fixed; z-index: 50; left: 50%; bottom: 30px; transform: translate(-50%, 20px); padding: 12px 18px; border-radius: 999px; background: var(--ink); color: white; opacity: 0; pointer-events: none; font-size: 13px; transition: .3s; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Classmate lineup */
+.roster-topbar { max-width: 1480px; }
+.roster-layout { min-height: calc(100vh - 112px); max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: minmax(300px,.72fr) minmax(650px,1.28fr); align-items: center; gap: 5vw; padding: 42px 0; }
+.roster-copy > p:not(.eyebrow) { max-width: 450px; margin: 34px 0 30px; color: var(--muted); font-size: 16px; line-height: 1.8; }
+.shuffle-button { position: relative; display: inline-flex; align-items: center; gap: 13px; min-height: 68px; padding: 0 25px 0 15px; border: 0; border-radius: 18px; color: white; background: var(--ink); box-shadow: 0 8px 0 rgba(32,49,45,.14), 0 18px 30px rgba(32,49,45,.16); cursor: pointer; text-align: left; transition: transform .2s, background .2s; }
+.shuffle-button:hover { transform: translateY(-3px); background: var(--green); }
+.shuffle-button:disabled { cursor: wait; }
+.shuffle-button .shuffle-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--ink); background: var(--yellow); font-size: 18px; }
+.shuffle-button strong, .shuffle-button small { display: block; }
+.shuffle-button strong { font-size: 15px; }
+.shuffle-button small { margin-top: 3px; opacity: .58; font: 700 8px var(--latin); letter-spacing: .18em; }
+.roster-board { position: relative; min-height: 610px; padding: 54px 28px 28px; border: 1px solid rgba(32,49,45,.1); border-radius: 36px; background: rgba(255,255,255,.6); box-shadow: var(--shadow); overflow: hidden; isolation: isolate; }
+.roster-board::before { content: ""; position: absolute; z-index: -2; inset: 0; background: radial-gradient(circle at 25% 20%, rgba(245,196,81,.24), transparent 28%), radial-gradient(circle at 80% 75%, rgba(136,200,210,.22), transparent 33%); }
+.orbit { position: absolute; z-index: -1; border: 1px solid rgba(32,49,45,.12); border-radius: 50%; pointer-events: none; }
+.orbit-one { width: 430px; height: 430px; left: -180px; top: -220px; }
+.orbit-two { width: 270px; height: 270px; right: -130px; bottom: -110px; border-width: 28px; border-color: rgba(240,111,85,.09); }
+.roster-current-card { position: relative; width: min(100%, 520px); min-height: 256px; margin: 0 auto 28px; padding: 24px 24px 22px; border: 2px solid var(--ink); border-radius: 28px; background: #fff8ec; box-shadow: 9px 9px 0 var(--yellow); text-align: center; }
+.roster-current-label { color: var(--coral); font: 800 10px var(--latin); letter-spacing: .2em; }
+.roster-avatar { display: grid; place-items: center; width: 66px; height: 66px; margin: 14px auto 7px; border-radius: 50%; color: white; background: var(--green); font-size: 28px; font-weight: 900; box-shadow: 4px 4px 0 var(--sky); }
+.roster-current-card h2 { margin: 0; font-size: 32px; }
+.roster-current-card > p { margin: 3px 0 17px; color: var(--muted); font-size: 12px; }
+.roster-controls { display: flex; justify-content: center; gap: 8px; }
+.roster-controls button { min-height: 42px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 700; }
+.roster-controls button.primary { border-color: var(--ink); background: var(--ink); color: white; }
+.roster-controls button:disabled { opacity: .35; cursor: not-allowed; }
+.roster-list { position: relative; display: grid; grid-template-columns: repeat(4,1fr); gap: 9px; margin: 0; padding: 0; list-style: none; }
+.roster-list li { min-width: 0; min-height: 70px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,253,247,.82); animation: cardIn .45s both; animation-delay: var(--delay); }
+.roster-list li b, .roster-list li small { display: block; font: 700 9px var(--latin); }
+.roster-list li b { color: var(--coral); }
+.roster-list li span { display: block; margin: 4px 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 800; }
+.roster-list li small { color: var(--muted); }
+.roster-list li.current { border-color: var(--ink); background: var(--yellow); box-shadow: 3px 3px 0 var(--ink); transform: translateY(-2px); }
+.roster-list li.done { opacity: .42; }
+.roster-list li.done span { text-decoration: line-through; }
+.roster-board.is-shuffling .roster-current-card { animation: shufflePulse .36s infinite alternate; }
+.roster-board.is-shuffling .roster-list li { animation: shuffleCards .3s infinite alternate; }
+.roster-board.shuffle-done .roster-current-card { animation: cardCelebrate .75s ease; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(12px) rotate(2deg); } to { opacity: 1; transform: none; } }
+@keyframes shufflePulse { to { transform: scale(1.025) rotate(-.7deg); box-shadow: 13px 13px 0 var(--sky); } }
+@keyframes shuffleCards { to { transform: translateY(-5px) rotate(1deg); background: rgba(245,196,81,.35); } }
+@keyframes cardCelebrate { 35% { transform: scale(1.035) rotate(1deg); box-shadow: 13px 13px 0 var(--coral); } }
 
 @media (max-width: 760px) {
   .wheel-view { padding-inline: 24px; }
@@ -221,12 +280,20 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
   .intro-text { margin-inline: auto; }
   .wheel-wrap { width: min(78vw, 580px); }
   .wheel-stage { padding-top: 50px; }
+  .current-person-badge { top: 35px; left: 1%; }
+  .roster-layout { grid-template-columns: 1fr; gap: 28px; padding-top: 34px; }
+  .roster-copy { text-align: center; }
+  .roster-copy .eyebrow { justify-content: center; }
+  .roster-copy > p:not(.eyebrow) { margin-inline: auto; }
+  .roster-board { min-height: 0; }
 }
 
 @media (max-width: 640px) {
   .wheel-view, .topic-view { padding-inline: 18px; }
   .topbar, .topic-topbar { height: 70px; }
   .history-button > span:first-child { display: none; }
+  .roster-button { width: 44px; min-height: 44px; padding: 0; font-size: 0; }
+  .roster-button span { margin: 0; font-size: 17px; }
   h1 { font-size: clamp(42px, 13vw, 62px); }
   .intro-text { margin: 28px auto 20px; font-size: 15px; }
   .how-to { gap: 8px; }
@@ -234,6 +301,11 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
   .how-to div { font-size: 11px; }
   .wheel-layout { padding-top: 34px; }
   .wheel-wrap { width: min(92vw, 500px); }
+  .current-person-badge { position: relative; top: auto; left: auto; width: auto; min-width: 158px; margin-bottom: 18px; padding: 9px 14px; transform: none; text-align: center; }
+  .current-person-badge.is-live { animation-name: personLiveMobile; }
+  .current-person-badge::after { display: none; }
+  .current-person-badge strong { display: inline; margin: 0 7px; font-size: 17px; }
+  .current-person-badge span, .current-person-badge small { display: inline; }
   .spin-button { width: 90px; height: 90px; border-width: 6px; }
   .spin-button strong { font-size: 18px; }
   .pointer { top: 29px; width: 32px; height: 42px; }
@@ -241,6 +313,7 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
   .doodle { display: none; }
   .brand.compact { display: none; }
   .topic-card { min-height: auto; margin-top: 26px; padding: 42px 18px 28px; border-radius: 24px; }
+  .topic-person-chip { margin: 18px auto -10px; }
   .topic-number { right: 18px; top: 14px; font-size: 58px; }
   .topic-icon { width: 62px; height: 62px; font-size: 27px; }
   .topic-card h2 { font-size: 36px; }
@@ -249,9 +322,20 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
   .prompt { min-height: 0; padding: 13px 15px; }
   .prompt b { display: inline; margin-right: 6px; }
   .topic-actions { flex-wrap: wrap; }
-  .timer-button, .next-button { width: 100%; }
+  .timer-button, .previous-topic-button, .next-button { width: 100%; }
   .timer.visible { position: absolute; top: -62px; right: 4px; }
+  .roster-view { padding-inline: 18px; }
+  .roster-layout { padding-top: 24px; }
+  .roster-copy h1 { font-size: clamp(42px,13vw,58px); }
+  .roster-copy > p:not(.eyebrow) { margin: 24px auto; font-size: 14px; }
+  .roster-board { padding: 34px 14px 18px; border-radius: 26px; }
+  .roster-current-card { padding-inline: 12px; }
+  .roster-controls { flex-wrap: wrap; }
+  .roster-controls button.primary { order: -1; width: 100%; }
+  .roster-list { grid-template-columns: repeat(2,1fr); }
 }
+
+@keyframes personLiveMobile { to { transform: scale(1.045); box-shadow: 0 12px 28px rgba(240,111,85,.2); } }
 
 @media (min-width: 761px) and (max-height: 700px) {
   .topic-topbar { height: 64px; }

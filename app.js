@@ -13,6 +13,8 @@ const topics = [
   { title: "我的超能力", short: "我的超能力", icon: "⚡", color: "#9a9ccc", lead: "可以选择一种超能力，你会选什么？答案里也许藏着你最在意的事情。", prompts: ["你想拥有哪种超能力？", "会先用它做什么？", "它会给生活带来什么变化？"] }
 ];
 
+const classmates = ["李周强", "左安", "郑梁玉", "黄子敬", "王品淳", "姚耀", "易紫涵", "朱梓萌", "张昕昱", "邱惠丽", "付香娜"];
+
 const canvas = document.getElementById("wheelCanvas");
 const ctx = canvas.getContext("2d");
 const wheelWrap = document.getElementById("wheelWrap");
@@ -20,6 +22,7 @@ const wheelLabelLayer = document.getElementById("wheelLabelLayer");
 const spinButton = document.getElementById("spinButton");
 const wheelView = document.getElementById("wheelView");
 const topicView = document.getElementById("topicView");
+const rosterView = document.getElementById("rosterView");
 const historyPanel = document.getElementById("historyPanel");
 const historyList = document.getElementById("historyList");
 const emptyHistory = document.getElementById("emptyHistory");
@@ -35,6 +38,14 @@ let selectedIndex = null;
 let drawHistory = JSON.parse(sessionStorage.getItem("intro-wheel-history") || "[]");
 let timerId = null;
 let timeLeft = 60;
+let rosterOrder = JSON.parse(sessionStorage.getItem("intro-roster-order") || "null") || [...classmates];
+let currentPersonIndex = Number(sessionStorage.getItem("intro-current-person") || 0);
+let shuffleTimer = null;
+
+if (!Array.isArray(rosterOrder) || rosterOrder.length !== classmates.length || !classmates.every(name => rosterOrder.includes(name))) {
+  rosterOrder = [...classmates];
+}
+currentPersonIndex = Math.max(0, Math.min(currentPersonIndex, rosterOrder.length - 1));
 
 function drawWheel() {
   const size = canvas.width;
@@ -120,10 +131,96 @@ function animateContinuous(now) {
 function startSpin() {
   stopTimer();
   spinState = "spinning";
+  document.querySelector(".current-person-badge").classList.add("is-live");
   spinSpeed = 70;
   lastFrameTime = performance.now();
   updateSpinButton("spinning");
   animationFrame = window.requestAnimationFrame(animateContinuous);
+}
+
+function saveRoster() {
+  sessionStorage.setItem("intro-roster-order", JSON.stringify(rosterOrder));
+  sessionStorage.setItem("intro-current-person", String(currentPersonIndex));
+}
+
+function renderRoster() {
+  const currentName = rosterOrder[currentPersonIndex];
+  document.querySelectorAll(".currentPersonName").forEach(element => { element.textContent = currentName; });
+  document.querySelectorAll(".currentPersonPosition").forEach(element => {
+    element.textContent = `${String(currentPersonIndex + 1).padStart(2, "0")} / ${rosterOrder.length}`;
+  });
+  document.getElementById("rosterCurrentName").textContent = currentName;
+  document.getElementById("rosterAvatar").textContent = currentName.slice(0, 1);
+  document.getElementById("rosterCurrentCount").textContent = `第 ${currentPersonIndex + 1} 位 · 共 ${rosterOrder.length} 位`;
+  document.getElementById("previousPersonButton").disabled = currentPersonIndex === 0;
+  document.getElementById("previousTopicButton").disabled = currentPersonIndex === 0;
+  document.getElementById("rosterList").innerHTML = rosterOrder.map((name, index) => {
+    const state = index < currentPersonIndex ? "done" : index === currentPersonIndex ? "current" : "upcoming";
+    const label = state === "done" ? "已介绍" : state === "current" ? "当前" : "等待";
+    return `<li class="${state}" style="--delay:${index * 42}ms"><b>${String(index + 1).padStart(2, "0")}</b><span>${name}</span><small>${label}</small></li>`;
+  }).join("");
+  saveRoster();
+}
+
+function showRoster() {
+  stopTimer();
+  wheelView.classList.add("hidden");
+  topicView.classList.remove("active");
+  rosterView.classList.add("active");
+  renderRoster();
+  window.history.replaceState(null, "", "#classmates");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function hideRoster() {
+  rosterView.classList.remove("active");
+  topicView.classList.remove("active");
+  wheelView.classList.remove("hidden");
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  spinButton.focus({ preventScroll: true });
+}
+
+function movePerson(direction) {
+  const nextIndex = Math.max(0, Math.min(currentPersonIndex + direction, rosterOrder.length - 1));
+  if (nextIndex === currentPersonIndex) {
+    showToast(direction > 0 ? "已经是最后一位同学啦 ✦" : "已经是第一位同学啦");
+    return false;
+  }
+  currentPersonIndex = nextIndex;
+  renderRoster();
+  showToast(direction > 0 ? `下一位：${rosterOrder[currentPersonIndex]}` : `返回：${rosterOrder[currentPersonIndex]}`);
+  return true;
+}
+
+function shuffleRoster() {
+  if (shuffleTimer) return;
+  const button = document.getElementById("shuffleButton");
+  const board = document.getElementById("rosterBoard");
+  button.disabled = true;
+  board.classList.add("is-shuffling");
+  button.querySelector("strong").textContent = "正在生成顺序…";
+  let ticks = 0;
+  shuffleTimer = window.setInterval(() => {
+    rosterOrder = [...rosterOrder].sort(() => Math.random() - 0.5);
+    currentPersonIndex = 0;
+    renderRoster();
+    ticks += 1;
+    if (ticks < 12) return;
+    window.clearInterval(shuffleTimer);
+    shuffleTimer = null;
+    // Fisher–Yates produces the final, unbiased order after the visual shuffle.
+    for (let i = rosterOrder.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rosterOrder[i], rosterOrder[j]] = [rosterOrder[j], rosterOrder[i]];
+    }
+    renderRoster();
+    board.classList.remove("is-shuffling");
+    board.classList.add("shuffle-done");
+    window.setTimeout(() => board.classList.remove("shuffle-done"), 800);
+    button.disabled = false;
+    button.querySelector("strong").textContent = "重新随机排序";
+    showToast(`顺序已生成，${rosterOrder[0]} 第一位登场！`);
+  }, 90);
 }
 
 function stopSpin() {
@@ -158,6 +255,7 @@ function stopSpin() {
     }
     renderRotation(targetRotation);
     spinState = "idle";
+    document.querySelector(".current-person-badge").classList.remove("is-live");
     spinButton.disabled = false;
     updateSpinButton("idle");
     addHistory(selectedIndex);
@@ -183,6 +281,7 @@ function showTopic(index, updateHash = true) {
   document.getElementById("promptList").innerHTML = topic.prompts.map((prompt, i) => `<div class="prompt"><b>0${i + 1}</b><span>${prompt}</span></div>`).join("");
   resetTimer();
   wheelView.classList.add("hidden");
+  rosterView.classList.remove("active");
   topicView.classList.add("active");
   if (updateHash) window.history.replaceState(null, "", `#topic-${index + 1}`);
   document.getElementById("topicTitle").focus?.({ preventScroll: true });
@@ -191,6 +290,7 @@ function showTopic(index, updateHash = true) {
 function showWheel() {
   stopTimer();
   topicView.classList.remove("active");
+  rosterView.classList.remove("active");
   wheelView.classList.remove("hidden");
   window.history.replaceState(null, "", window.location.pathname + window.location.search);
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -267,7 +367,20 @@ function showToast(message) {
 
 spinButton.addEventListener("click", toggleSpin);
 document.getElementById("backButton").addEventListener("click", showWheel);
-document.getElementById("nextButton").addEventListener("click", showWheel);
+document.getElementById("nextButton").addEventListener("click", () => {
+  movePerson(1);
+  showWheel();
+});
+document.getElementById("previousTopicButton").addEventListener("click", () => {
+  movePerson(-1);
+  showWheel();
+});
+document.getElementById("rosterButton").addEventListener("click", showRoster);
+document.getElementById("rosterBackButton").addEventListener("click", hideRoster);
+document.getElementById("shuffleButton").addEventListener("click", shuffleRoster);
+document.getElementById("previousPersonButton").addEventListener("click", () => movePerson(-1));
+document.getElementById("skipPersonButton").addEventListener("click", () => movePerson(1));
+document.getElementById("startPersonButton").addEventListener("click", hideRoster);
 document.getElementById("timerButton").addEventListener("click", toggleTimer);
 document.getElementById("historyButton").addEventListener("click", () => toggleHistory(true));
 document.getElementById("closeHistory").addEventListener("click", () => toggleHistory(false));
@@ -290,8 +403,11 @@ drawWheel();
 createWheelLabels();
 renderRotation(0);
 renderHistory();
+renderRoster();
 const initialTopic = window.location.hash.match(/^#topic-(\d+)$/);
 if (initialTopic) {
   const index = Number(initialTopic[1]) - 1;
   if (index >= 0 && index < topics.length) showTopic(index, false);
+} else if (window.location.hash === "#classmates") {
+  showRoster();
 }
