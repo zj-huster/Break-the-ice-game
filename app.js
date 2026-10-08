@@ -13,8 +13,6 @@ const topics = [
   { title: "我的超能力", short: "我的超能力", icon: "⚡", color: "#9a9ccc", lead: "可以选择一种超能力，你会选什么？答案里也许藏着你最在意的事情。", prompts: ["你想拥有哪种超能力？", "会先用它做什么？", "它会给生活带来什么变化？"] }
 ];
 
-const classmates = ["李周强", "左安", "郑梁玉", "黄子敬", "王品淳", "姚耀", "易紫涵", "朱梓萌", "张昕昱", "邱惠丽", "付香娜"];
-
 const canvas = document.getElementById("wheelCanvas");
 const ctx = canvas.getContext("2d");
 const wheelWrap = document.getElementById("wheelWrap");
@@ -27,6 +25,8 @@ const historyPanel = document.getElementById("historyPanel");
 const historyList = document.getElementById("historyList");
 const emptyHistory = document.getElementById("emptyHistory");
 const historyCount = document.getElementById("historyCount");
+const rosterDialog = document.getElementById("rosterDialog");
+const rosterInput = document.getElementById("rosterInput");
 const TAU = Math.PI * 2;
 const segment = TAU / topics.length;
 let rotation = 0;
@@ -38,14 +38,39 @@ let selectedIndex = null;
 let drawHistory = JSON.parse(sessionStorage.getItem("intro-wheel-history") || "[]");
 let timerId = null;
 let timeLeft = 60;
-let rosterOrder = JSON.parse(sessionStorage.getItem("intro-roster-order") || "null") || [...classmates];
+let rosterOrder = loadRoster();
 let currentPersonIndex = Number(sessionStorage.getItem("intro-current-person") || 0);
 let shuffleTimer = null;
 
-if (!Array.isArray(rosterOrder) || rosterOrder.length !== classmates.length || !classmates.every(name => rosterOrder.includes(name))) {
-  rosterOrder = [...classmates];
+currentPersonIndex = Math.max(0, Math.min(currentPersonIndex, Math.max(0, rosterOrder.length - 1)));
+
+function loadRoster() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("intro-roster") || "null");
+    const previousSessionOrder = JSON.parse(sessionStorage.getItem("intro-roster-order") || "null");
+    const savedRoster = Array.isArray(saved) ? parseRoster(saved.join("\n")) : [];
+    const sessionRoster = Array.isArray(previousSessionOrder) ? parseRoster(previousSessionOrder.join("\n")) : [];
+    const sessionMatchesSaved = savedRoster.length === sessionRoster.length
+      && savedRoster.every(name => sessionRoster.includes(name));
+    if (sessionMatchesSaved && sessionRoster.length) return sessionRoster;
+    if (savedRoster.length) return savedRoster;
+    if (sessionRoster.length) return sessionRoster;
+  } catch (error) {
+    console.warn("无法读取已保存的名单", error);
+  }
+  return [];
 }
-currentPersonIndex = Math.max(0, Math.min(currentPersonIndex, rosterOrder.length - 1));
+
+function parseRoster(value) {
+  const names = String(value).split(/[\n,，、;；]+/).map(name => name.trim()).filter(Boolean);
+  return [...new Set(names)].slice(0, 100);
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  })[character]);
+}
 
 function drawWheel() {
   const size = canvas.width;
@@ -129,6 +154,10 @@ function animateContinuous(now) {
 }
 
 function startSpin() {
+  if (!rosterOrder.length) {
+    openRosterEditor();
+    return;
+  }
   stopTimer();
   spinState = "spinning";
   document.querySelector(".current-person-badge").classList.add("is-live");
@@ -144,6 +173,24 @@ function saveRoster() {
 }
 
 function renderRoster() {
+  const hasRoster = rosterOrder.length > 0;
+  document.getElementById("rosterTotal").textContent = `PARTICIPANTS · ${rosterOrder.length}`;
+  document.getElementById("shuffleButton").disabled = !hasRoster;
+  document.getElementById("startPersonButton").disabled = !hasRoster;
+  document.getElementById("skipPersonButton").disabled = !hasRoster || currentPersonIndex >= rosterOrder.length - 1;
+  document.getElementById("previousPersonButton").disabled = !hasRoster || currentPersonIndex === 0;
+  document.getElementById("previousTopicButton").disabled = !hasRoster || currentPersonIndex === 0;
+  document.getElementById("nextButton").disabled = !hasRoster || currentPersonIndex >= rosterOrder.length - 1;
+  spinButton.setAttribute("aria-disabled", String(!hasRoster));
+  if (!hasRoster) {
+    document.querySelectorAll(".currentPersonName").forEach(element => { element.textContent = "等待录入"; });
+    document.querySelectorAll(".currentPersonPosition").forEach(element => { element.textContent = "0 人"; });
+    document.getElementById("rosterCurrentName").textContent = "等待录入名单";
+    document.getElementById("rosterAvatar").textContent = "?";
+    document.getElementById("rosterCurrentCount").textContent = "还没有参与人员";
+    document.getElementById("rosterList").innerHTML = '<li class="roster-empty"><b>READY?</b><span>添加名单后即可开始</span><small>支持最多 100 人</small></li>';
+    return;
+  }
   const currentName = rosterOrder[currentPersonIndex];
   document.querySelectorAll(".currentPersonName").forEach(element => { element.textContent = currentName; });
   document.querySelectorAll(".currentPersonPosition").forEach(element => {
@@ -152,14 +199,46 @@ function renderRoster() {
   document.getElementById("rosterCurrentName").textContent = currentName;
   document.getElementById("rosterAvatar").textContent = currentName.slice(0, 1);
   document.getElementById("rosterCurrentCount").textContent = `第 ${currentPersonIndex + 1} 位 · 共 ${rosterOrder.length} 位`;
-  document.getElementById("previousPersonButton").disabled = currentPersonIndex === 0;
-  document.getElementById("previousTopicButton").disabled = currentPersonIndex === 0;
   document.getElementById("rosterList").innerHTML = rosterOrder.map((name, index) => {
     const state = index < currentPersonIndex ? "done" : index === currentPersonIndex ? "current" : "upcoming";
     const label = state === "done" ? "已介绍" : state === "current" ? "当前" : "等待";
-    return `<li class="${state}" style="--delay:${index * 42}ms"><b>${String(index + 1).padStart(2, "0")}</b><span>${name}</span><small>${label}</small></li>`;
+    return `<li class="${state}" style="--delay:${index * 42}ms"><b>${String(index + 1).padStart(2, "0")}</b><span>${escapeHtml(name)}</span><small>${label}</small></li>`;
   }).join("");
   saveRoster();
+}
+
+function updateRosterInputStatus() {
+  const names = parseRoster(rosterInput.value);
+  const rawCount = String(rosterInput.value).split(/[\n,，、;；]+/).map(name => name.trim()).filter(Boolean).length;
+  const duplicateCount = rawCount - names.length;
+  document.getElementById("rosterInputStatus").textContent = names.length
+    ? `共 ${names.length} 人${duplicateCount ? ` · 已忽略 ${duplicateCount} 个重复项` : ""}`
+    : "尚未输入人员";
+}
+
+function openRosterEditor() {
+  rosterInput.value = rosterOrder.join("\n");
+  document.getElementById("rosterError").textContent = "";
+  document.getElementById("cancelRosterButton").hidden = rosterOrder.length === 0;
+  updateRosterInputStatus();
+  rosterDialog.showModal();
+  window.setTimeout(() => rosterInput.focus(), 0);
+}
+
+function saveRosterInput(event) {
+  event.preventDefault();
+  const names = parseRoster(rosterInput.value);
+  if (!names.length) {
+    document.getElementById("rosterError").textContent = "请至少输入一位参与人员。";
+    rosterInput.focus();
+    return;
+  }
+  rosterOrder = names;
+  currentPersonIndex = 0;
+  localStorage.setItem("intro-roster", JSON.stringify(names));
+  renderRoster();
+  rosterDialog.close();
+  showToast(`名单已保存，共 ${names.length} 人`);
 }
 
 function showRoster() {
@@ -181,9 +260,13 @@ function hideRoster() {
 }
 
 function movePerson(direction) {
+  if (!rosterOrder.length) {
+    openRosterEditor();
+    return false;
+  }
   const nextIndex = Math.max(0, Math.min(currentPersonIndex + direction, rosterOrder.length - 1));
   if (nextIndex === currentPersonIndex) {
-    showToast(direction > 0 ? "已经是最后一位同学啦 ✦" : "已经是第一位同学啦");
+    showToast(direction > 0 ? "已经是最后一位参与者啦 ✦" : "已经是第一位参与者啦");
     return false;
   }
   currentPersonIndex = nextIndex;
@@ -193,7 +276,7 @@ function movePerson(direction) {
 }
 
 function shuffleRoster() {
-  if (shuffleTimer) return;
+  if (shuffleTimer || !rosterOrder.length) return;
   const button = document.getElementById("shuffleButton");
   const board = document.getElementById("rosterBoard");
   button.disabled = true;
@@ -378,6 +461,21 @@ document.getElementById("previousTopicButton").addEventListener("click", () => {
 document.getElementById("rosterButton").addEventListener("click", showRoster);
 document.getElementById("rosterBackButton").addEventListener("click", hideRoster);
 document.getElementById("shuffleButton").addEventListener("click", shuffleRoster);
+document.getElementById("editRosterButton").addEventListener("click", openRosterEditor);
+document.getElementById("rosterForm").addEventListener("submit", saveRosterInput);
+document.getElementById("cancelRosterButton").addEventListener("click", () => rosterDialog.close());
+document.getElementById("clearRosterInput").addEventListener("click", () => {
+  rosterInput.value = "";
+  updateRosterInputStatus();
+  rosterInput.focus();
+});
+rosterInput.addEventListener("input", () => {
+  document.getElementById("rosterError").textContent = "";
+  updateRosterInputStatus();
+});
+rosterDialog.addEventListener("cancel", event => {
+  if (!rosterOrder.length) event.preventDefault();
+});
 document.getElementById("previousPersonButton").addEventListener("click", () => movePerson(-1));
 document.getElementById("skipPersonButton").addEventListener("click", () => movePerson(1));
 document.getElementById("startPersonButton").addEventListener("click", hideRoster);
@@ -405,7 +503,9 @@ renderRotation(0);
 renderHistory();
 renderRoster();
 const initialTopic = window.location.hash.match(/^#topic-(\d+)$/);
-if (initialTopic) {
+if (!rosterOrder.length) {
+  openRosterEditor();
+} else if (initialTopic) {
   const index = Number(initialTopic[1]) - 1;
   if (index >= 0 && index < topics.length) showTopic(index, false);
 } else if (window.location.hash === "#classmates") {

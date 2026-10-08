@@ -33,7 +33,7 @@ body {
 
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
-button:focus-visible, a:focus-visible { outline: 3px solid var(--sky); outline-offset: 4px; }
+button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
 
 .noise {
   position: fixed;
@@ -241,6 +241,10 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
 .shuffle-button strong, .shuffle-button small { display: block; }
 .shuffle-button strong { font-size: 15px; }
 .shuffle-button small { margin-top: 3px; opacity: .58; font: 700 8px var(--latin); letter-spacing: .18em; }
+.roster-action-row { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+.edit-roster-button { min-height: 50px; padding: 0 18px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.58); color: var(--ink); cursor: pointer; font-size: 13px; font-weight: 800; }
+.edit-roster-button span { margin-right: 5px; color: var(--coral); }
+.edit-roster-button:hover { border-color: var(--ink); background: white; }
 .roster-board { position: relative; min-height: 610px; padding: 54px 28px 28px; border: 1px solid rgba(32,49,45,.1); border-radius: 36px; background: rgba(255,255,255,.6); box-shadow: var(--shadow); overflow: hidden; isolation: isolate; }
 .roster-board::before { content: ""; position: absolute; z-index: -2; inset: 0; background: radial-gradient(circle at 25% 20%, rgba(245,196,81,.24), transparent 28%), radial-gradient(circle at 80% 75%, rgba(136,200,210,.22), transparent 33%); }
 .orbit { position: absolute; z-index: -1; border: 1px solid rgba(32,49,45,.12); border-radius: 50%; pointer-events: none; }
@@ -264,6 +268,8 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
 .roster-list li.current { border-color: var(--ink); background: var(--yellow); box-shadow: 3px 3px 0 var(--ink); transform: translateY(-2px); }
 .roster-list li.done { opacity: .42; }
 .roster-list li.done span { text-decoration: line-through; }
+.roster-list li.roster-empty { grid-column: 1 / -1; min-height: 92px; display: grid; place-content: center; text-align: center; border-style: dashed; }
+.roster-list li.roster-empty span { overflow: visible; }
 .roster-board.is-shuffling .roster-current-card { animation: shufflePulse .36s infinite alternate; }
 .roster-board.is-shuffling .roster-list li { animation: shuffleCards .3s infinite alternate; }
 .roster-board.shuffle-done .roster-current-card { animation: cardCelebrate .75s ease; }
@@ -271,6 +277,28 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
 @keyframes shufflePulse { to { transform: scale(1.025) rotate(-.7deg); box-shadow: 13px 13px 0 var(--sky); } }
 @keyframes shuffleCards { to { transform: translateY(-5px) rotate(1deg); background: rgba(245,196,81,.35); } }
 @keyframes cardCelebrate { 35% { transform: scale(1.035) rotate(1deg); box-shadow: 13px 13px 0 var(--coral); } }
+
+/* Editable participant list */
+.roster-dialog { width: min(560px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 28px; color: var(--ink); background: #fffdf7; box-shadow: 0 28px 90px rgba(25,39,34,.3); }
+.roster-dialog::backdrop { background: rgba(25,39,34,.5); backdrop-filter: blur(5px); }
+.roster-dialog form { padding: 32px; }
+.dialog-heading { display: flex; align-items: center; gap: 14px; }
+.dialog-icon { display: grid; place-items: center; width: 48px; height: 48px; flex: 0 0 auto; border-radius: 15px; color: var(--ink); background: var(--yellow); font-size: 20px; transform: rotate(-3deg); box-shadow: 4px 4px 0 var(--ink); }
+.dialog-heading p { margin: 0 0 3px; color: var(--coral); font: 800 9px var(--latin); letter-spacing: .18em; }
+.dialog-heading h2 { margin: 0; font-size: 26px; }
+.dialog-help { margin: 22px 0 18px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.roster-dialog label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 800; }
+.roster-dialog textarea { display: block; width: 100%; min-height: 210px; resize: vertical; padding: 15px 16px; border: 1px solid var(--line); border-radius: 16px; color: var(--ink); background: var(--paper); font: 600 15px/1.7 var(--display); }
+.roster-dialog textarea::placeholder { color: #9ba29e; }
+.input-meta { display: flex; justify-content: space-between; align-items: center; min-height: 34px; color: var(--muted); font-size: 12px; }
+.input-meta button { border: 0; background: transparent; color: var(--coral); cursor: pointer; font-weight: 700; }
+.form-error { min-height: 20px; margin: 0; color: #b73728; font-size: 12px; font-weight: 700; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+.dialog-actions button { min-height: 48px; padding: 0 20px; border-radius: 999px; cursor: pointer; font-weight: 800; }
+.dialog-cancel { border: 1px solid var(--line); color: var(--ink); background: transparent; }
+.dialog-save { border: 0; color: white; background: var(--ink); }
+.dialog-save:hover { background: var(--green); }
+.dialog-save span { margin-left: 8px; }
 
 @media (max-width: 760px) {
   .wheel-view { padding-inline: 24px; }
@@ -285,6 +313,7 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
   .roster-copy { text-align: center; }
   .roster-copy .eyebrow { justify-content: center; }
   .roster-copy > p:not(.eyebrow) { margin-inline: auto; }
+  .roster-action-row { justify-content: center; }
   .roster-board { min-height: 0; }
 }
 
@@ -333,6 +362,8 @@ kbd { padding: 3px 8px; border: 1px solid var(--line); border-bottom-width: 2px;
   .roster-controls { flex-wrap: wrap; }
   .roster-controls button.primary { order: -1; width: 100%; }
   .roster-list { grid-template-columns: repeat(2,1fr); }
+  .roster-dialog form { padding: 24px 20px; }
+  .roster-dialog textarea { min-height: 180px; }
 }
 
 @keyframes personLiveMobile { to { transform: scale(1.045); box-shadow: 0 12px 28px rgba(240,111,85,.2); } }

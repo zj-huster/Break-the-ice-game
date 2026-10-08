@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fff8ec" />
-    <meta name="description" content="包含 11 位新同学出场顺序与 12 个破冰话题的互动转盘。" />
-    <title>认识一下 · 新同学自我介绍转盘</title>
+    <meta name="description" content="可自行录入人员名单与随机出场顺序的自我介绍互动转盘。" />
+    <title>认识一下 · 自我介绍转盘</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -19,7 +19,7 @@
             <span>认识一下</span>
           </a>
           <div class="topbar-actions">
-            <button class="roster-button" id="rosterButton" type="button"><span aria-hidden="true">◎</span> 同学顺序</button>
+            <button class="roster-button" id="rosterButton" type="button"><span aria-hidden="true">◎</span> 人员顺序</button>
             <button class="history-button" id="historyButton" type="button" aria-expanded="false" aria-controls="historyPanel">
               <span>抽取记录</span>
               <span class="history-count" id="historyCount">0</span>
@@ -44,9 +44,9 @@
 
           <div class="wheel-stage">
             <div class="current-person-badge" aria-live="polite">
-              <span>NOW · 当前同学</span>
-              <strong class="currentPersonName">李周强</strong>
-              <small class="currentPersonPosition">01 / 11</small>
+              <span>NOW · 当前人员</span>
+              <strong class="currentPersonName">等待录入</strong>
+              <small class="currentPersonPosition">0 人</small>
             </div>
             <div class="doodle doodle-one" aria-hidden="true">✦</div>
             <div class="doodle doodle-two" aria-hidden="true">⌁</div>
@@ -83,18 +83,21 @@
         <header class="topic-topbar roster-topbar">
           <button class="back-button" id="rosterBackButton" type="button"><span aria-hidden="true">←</span> 返回话题转盘</button>
           <div class="brand compact"><span class="brand-mark" aria-hidden="true">✦</span><span>认识一下</span></div>
-          <span class="topic-progress">NEW CLASSMATES · 11</span>
+          <span class="topic-progress" id="rosterTotal">PARTICIPANTS · 0</span>
         </header>
 
         <div class="roster-layout">
           <div class="roster-copy">
-            <p class="eyebrow"><span></span> MEET THE CREW · 新同学登场</p>
+            <p class="eyebrow"><span></span> MEET THE CREW · 参与人员登场</p>
             <h1 id="rosterTitle">下一位，<br /><em>会是谁？</em></h1>
-            <p>点击按钮，用一场小小的数字烟花打乱顺序。名单会在本次活动中保留，你也可以随时上一位或跳过。</p>
-            <button class="shuffle-button" id="shuffleButton" type="button">
-              <span class="shuffle-icon" aria-hidden="true">✦</span>
-              <span><strong>生成出场顺序</strong><small>SHUFFLE THE LINEUP</small></span>
-            </button>
+            <p>先录入参与人员，再用一场小小的数字烟花打乱顺序。名单会保存在当前浏览器中，之后也能随时修改。</p>
+            <div class="roster-action-row">
+              <button class="shuffle-button" id="shuffleButton" type="button">
+                <span class="shuffle-icon" aria-hidden="true">✦</span>
+                <span><strong>生成出场顺序</strong><small>SHUFFLE THE LINEUP</small></span>
+              </button>
+              <button class="edit-roster-button" id="editRosterButton" type="button"><span aria-hidden="true">✎</span> 编辑名单</button>
+            </div>
           </div>
 
           <div class="roster-board" id="rosterBoard">
@@ -102,9 +105,9 @@
             <div class="orbit orbit-two" aria-hidden="true"></div>
             <div class="roster-current-card" id="rosterCurrentCard">
               <span class="roster-current-label">NOW ON STAGE</span>
-              <div class="roster-avatar" id="rosterAvatar">李</div>
-              <h2 id="rosterCurrentName">李周强</h2>
-              <p id="rosterCurrentCount">第 1 位 · 共 11 位</p>
+              <div class="roster-avatar" id="rosterAvatar">?</div>
+              <h2 id="rosterCurrentName">等待录入名单</h2>
+              <p id="rosterCurrentCount">还没有参与人员</p>
               <div class="roster-controls">
                 <button id="previousPersonButton" type="button"><span aria-hidden="true">←</span> 上一位</button>
                 <button id="startPersonButton" class="primary" type="button">为 TA 转话题 <span aria-hidden="true">↗</span></button>
@@ -123,7 +126,7 @@
           <span class="topic-progress" id="topicProgress">01 / 12</span>
         </header>
 
-        <div class="topic-person-chip"><span>当前分享</span><strong class="currentPersonName">李周强</strong><small class="currentPersonPosition">01 / 11</small></div>
+        <div class="topic-person-chip"><span>当前分享</span><strong class="currentPersonName">等待录入</strong><small class="currentPersonPosition">0 人</small></div>
 
         <div class="topic-card" id="topicCard">
           <div class="topic-number" id="topicNumber" aria-hidden="true">01</div>
@@ -150,6 +153,30 @@
         <p class="topic-note">没有标准答案，分享你此刻最想说的就好。</p>
       </section>
     </main>
+
+    <dialog class="roster-dialog" id="rosterDialog" aria-labelledby="rosterDialogTitle">
+      <form method="dialog" id="rosterForm">
+        <div class="dialog-heading">
+          <span class="dialog-icon" aria-hidden="true">✦</span>
+          <div>
+            <p>PARTICIPANT LIST</p>
+            <h2 id="rosterDialogTitle">录入人员名单</h2>
+          </div>
+        </div>
+        <p class="dialog-help">每行输入一个名字，也可以用逗号、顿号或分号分隔。重复和空白姓名会自动清理。</p>
+        <label for="rosterInput">人员名单</label>
+        <textarea id="rosterInput" rows="9" placeholder="例如：&#10;张三&#10;李四&#10;王五" autocomplete="off"></textarea>
+        <div class="input-meta">
+          <span id="rosterInputStatus" aria-live="polite">尚未输入人员</span>
+          <button id="clearRosterInput" type="button">清空</button>
+        </div>
+        <p class="form-error" id="rosterError" role="alert"></p>
+        <div class="dialog-actions">
+          <button class="dialog-cancel" id="cancelRosterButton" type="button">取消</button>
+          <button class="dialog-save" type="submit">保存并开始 <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+    </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="app.js"></script>
